@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>The Adventures of a Dreamy Lass — 3D Game (start.ng)</title>
+  <meta name="description" content="3D Endless Adventure Game built with Three.js for start.ng! Bring your start.ng character, meet allies, boost popularity, and collect adventure equipment." />
+  <link rel="stylesheet" href="./style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <!-- 3D Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- start.ng Player Profile Card (Top-Left, always visible on start screen & HUD) -->
+  <div class="startng-card" id="player-card">
+    <img id="player-face" src="./assets/persona.png" alt="Player Avatar" />
+    <div class="player-meta">
+      <b id="player-name">Her (Dreamy Lass)</b>
+      <span id="player-account">Connecting to start.ng...</span>
+    </div>
+    <button id="player-sign-in" class="signin-pill" hidden>Sign in</button>
+  </div>
+
+  <!-- Top HUD -->
+  <header id="hud" class="hidden">
+    <div class="hud-left">
+      <div class="stat-pill zone-pill">
+        <span class="stat-icon">🌍</span>
+        <div>
+          <div class="stat-label">REALM</div>
+          <div class="stat-value" id="zone-badge">Zone 1: Lime Meadow</div>
+        </div>
+      </div>
+      <div class="stat-pill pop-pill" title="Popularity Boost from positive character interactions">
+        <span class="stat-icon">💖</span>
+        <div>
+          <div class="stat-label">POPULARITY</div>
+          <div class="stat-value"><span id="pop-val">100</span> <small id="mult-val">x1.0</small></div>
+        </div>
+      </div>
+      <div class="stat-pill dist-pill">
+        <span class="stat-icon">🧭</span>
+        <div>
+          <div class="stat-label">DISTANCE</div>
+          <div class="stat-value"><span id="dist-val">0</span>m</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud-center">
+      <div class="stamina-bar-wrap">
+        <div class="stamina-header">
+          <span>⚡ ADVENTURE VIBE & STAMINA</span>
+          <span id="vibe-pct">100%</span>
+        </div>
+        <div class="stamina-track">
+          <div id="stamina-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hud-right">
+      <div class="inventory-box">
+        <div class="inv-title">🎒 EQUIPMENT & INVENTORY (<span id="inv-count">0</span>/6)</div>
+        <div class="inv-slots" id="inv-slots">
+          <div class="inv-slot" data-item="boots" title="Swift Boots (Speed + Jump)">🥾</div>
+          <div class="inv-slot" data-item="pack" title="Explorer Pack (+Max Stamina)">🎒</div>
+          <div class="inv-slot" data-item="charm" title="Starlight Charm (Popularity Magnet)">✨</div>
+          <div class="inv-slot" data-item="compass" title="Dream Compass (Double Distance)">🧭</div>
+          <div class="inv-slot" data-item="mic" title="Charisma Mic (+50% Popularity Gains)">🎤</div>
+          <div class="inv-slot" data-item="cape" title="Holo-Cape (Vibe Shield)">🦸‍♀️</div>
+        </div>
+      </div>
+      <button id="sound-btn" class="icon-btn" title="Toggle Audio">🔊</button>
+    </div>
+  </header>
+
+  <!-- Floating Interaction Banner -->
+  <div id="interaction-toast" class="toast hidden">
+    <span id="toast-icon">🤝</span>
+    <div class="toast-text">
+      <strong id="toast-title">Met Creative Mentor!</strong>
+      <span id="toast-sub">+50 Popularity • x1.5 Boost!</span>
+    </div>
+  </div>
+
+  <!-- Mobile Controls -->
+  <div id="mobile-controls" class="hidden">
+    <button id="btn-left" class="ctrl-btn">◀</button>
+    <button id="btn-jump" class="ctrl-btn jump-btn">▲ JUMP</button>
+    <button id="btn-right" class="ctrl-btn">▶</button>
+  </div>
+
+  <!-- Start / Persona Showcase Modal -->
+  <section id="start-screen" class="overlay-screen">
+    <div class="modal-card">
+      <div class="badge-row">
+        <span class="startng-badge">🚀 start.ng Community Game</span>
+        <span class="threejs-badge">Three.js 3D Runner</span>
+      </div>
+
+      <h1>The Adventures of a Dreamy Lass</h1>
+      <p class="subtitle">Bring your <strong>start.ng character</strong> into a dreamy 3D world where every positive character interaction boosts your popularity and unlocks equipment for farther adventures!</p>
+
+      <div class="persona-grid">
+        <div class="persona-card">
+          <div class="persona-img-wrap">
+            <img id="showcase-avatar" src="./assets/persona.png" alt="Her - The Dreamy Lass Persona" />
+            <span class="persona-tag" id="showcase-name">Her</span>
+          </div>
+          <div class="persona-stats" id="persona-traits">
+            <div><strong>Hat:</strong> <span id="trait-hat">Charcoal Pom-Beanie</span></div>
+            <div><strong>Fit:</strong> <span id="trait-fit">Puff-Sleeve Tee & Indigo Trousers</span></div>
+            <div><strong>Superpower:</strong> Social Synergy & Boundless Curiosity</div>
+          </div>
+        </div>
+
+        <div class="rules-card">
+          <h3>🌟 How the Adventure Works</h3>
+          <ul class="howto-list">
+            <li>
+              <span class="li-icon">🤝</span>
+              <div>
+                <strong>Positive Character Interactions:</strong> Run into friendly Travelers, Mentors & Creatives to spark positive vibes, gain <strong>Popularity Boosts</strong>, and recharge your Adventure Stamina!
+              </div>
+            </li>
+            <li>
+              <span class="li-icon">🎒</span>
+              <div>
+                <strong>Collect Equipment & Inventory:</strong> Grab <em>Swift Boots, Explorer Packs, Starlight Charms, and Holo-Capes</em> to visibly upgrade your 3D character and unlock new realms!
+              </div>
+            </li>
+            <li>
+              <span class="li-icon">⛈️</span>
+              <div>
+                <strong>Dodge Doubt Clouds:</strong> Avoid red Gloom Blockers or jump over them (`SPACE` / `W` / `▲`) to protect your multiplier.
+              </div>
+            </li>
+          </ul>
+
+          <div class="controls-hint">
+            <span>⌨️ <strong>A / D</strong> or <strong>◀ / ▶</strong> Change Lanes</span>
+            <span>⌨️ <strong>SPACE / W / ▲</strong> Jump</span>
+            <span>📱 <strong>Swipe / Tap</strong> on Mobile</span>
+          </div>
+
+          <div class="start-actions">
+            <button id="start-btn" class="primary-btn">✨ START ADVENTURE ✨</button>
+            <button id="open-lb-btn" class="secondary-btn">🏆 View Leaderboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game Over / Adventure Summary & Leaderboard Modal -->
+  <section id="gameover-screen" class="overlay-screen hidden">
+    <div class="modal-card gameover-card">
+      <span class="startng-badge">🌟 Adventure Log Complete</span>
+      <h2 id="go-title">What a Dreamy Journey!</h2>
+      <p id="go-subtitle">Checking start.ng leaderboard...</p>
+
+      <div class="summary-stats">
+        <div class="sum-box">
+          <span class="sum-label">Popularity Score</span>
+          <strong class="sum-val highlight" id="final-pop">0</strong>
+        </div>
+        <div class="sum-box">
+          <span class="sum-label">Distance Traveled</span>
+          <strong class="sum-val" id="final-dist">0m</strong>
+        </div>
+        <div class="sum-box">
+          <span class="sum-label">Friends Met</span>
+          <strong class="sum-val" id="final-friends">0</strong>
+        </div>
+        <div class="sum-box">
+          <span class="sum-label">Gear Collected</span>
+          <strong class="sum-val" id="final-gear">0 / 6</strong>
+        </div>
+      </div>
+
+      <!-- start.ng Shared Leaderboard -->
+      <div class="leaderboard-panel">
+        <div class="lb-header">
+          <h3>🏆 start.ng Top Adventurers</h3>
+          <button id="gameover-signin-btn" class="signin-pill" hidden>Sign in to save score</button>
+        </div>
+        <ol id="leaderboard-list" class="lb-list">
+          <li class="lb-empty">Loading leaderboard...</li>
+        </ol>
+      </div>
+
+      <div class="action-row">
+        <button id="restart-btn" class="primary-btn">🔄 GO ON ANOTHER ADVENTURE</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="./game.js"></script>
+</body>
+</html>

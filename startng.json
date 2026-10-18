@@ -1,0 +1,9 @@
+{
+  "leaderboard": {
+    "stats": [
+      { "key": "popularity", "label": "Popularity", "order": "highest" },
+      { "key": "distance", "label": "Distance (m)", "order": "highest" },
+      { "key": "friends", "label": "Friends met", "order": "highest" }
+    ]
+  }
+}
